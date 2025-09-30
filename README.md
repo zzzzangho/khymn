@@ -1,2 +1,1 @@
-# nicepark-kiosk
-NICEPark 키오스크 UI
+# 찬송가 반주기
