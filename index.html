@@ -2,32 +2,156 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>노래방 기기</title>
+  <title>찬송기 반주기</title>
+  <style>
+    body {
+      font-family: "Malgun Gothic", sans-serif;
+      background: linear-gradient(135deg, #1c1c1c, #333);
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      gap: 40px;
+      width: 100%;
+      height: 100%;
+      max-width: 1600px;
+    }
+
+    /* 왼쪽 영상 */
+    .player-box {
+      flex: 3; /* 화면 비율에서 더 큰 비중 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      max-height: 80vh; /* 세로 화면 꽉 차지 않도록 */
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.7);
+    }
+
+    /* 오른쪽 제어 패널 */
+    .control-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #display {
+      width: 80%;
+      font-size: 2vw; /* 화면 폭에 비례 */
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 2px solid #ffcc00;
+      border-radius: 8px;
+      background: #000;
+      color: #ffcc00;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1vw;
+      width: 80%;
+    }
+
+    .btn {
+      font-size: 1.8vw; /* 화면 폭에 따라 크기 변함 */
+      padding: 2vh;     /* 화면 높이에 따라 여백 변함 */
+      border: none;
+      border-radius: 8px;
+      background: #555;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background: #777;
+    }
+
+    .btn-confirm {
+      grid-column: span 3;
+      background: #ff4444;
+      font-size: 2vw;
+    }
+  </style>
 </head>
 <body>
-  <h2>노래방 기기</h2>
-  <input type="text" id="songNum" placeholder="곡 번호 입력">
-  <button onclick="playSong()">재생</button>
+  <div class="container">
+    <!-- 왼쪽 영상 -->
+    <div class="player-box">
+      <h2>👼찬송가 반주기</h2>
+      <iframe id="player"
+        src="" frameborder="0"
+        allow="autoplay; encrypted-media"
+        allowfullscreen>
+      </iframe>
+    </div>
 
-  <div style="margin-top:20px;">
-    <iframe id="player" width="560" height="315"
-      src="" frameborder="0"
-      allow="autoplay; encrypted-media"
-      allowfullscreen>
-    </iframe>
+    <!-- 오른쪽 패널 -->
+    <div class="control-panel">
+      <input type="text" id="display" readonly placeholder="번호 입력">
+
+      <div class="keypad">
+        <button class="btn" onclick="pressNum('1')">1</button>
+        <button class="btn" onclick="pressNum('2')">2</button>
+        <button class="btn" onclick="pressNum('3')">3</button>
+        <button class="btn" onclick="pressNum('4')">4</button>
+        <button class="btn" onclick="pressNum('5')">5</button>
+        <button class="btn" onclick="pressNum('6')">6</button>
+        <button class="btn" onclick="pressNum('7')">7</button>
+        <button class="btn" onclick="pressNum('8')">8</button>
+        <button class="btn" onclick="pressNum('9')">9</button>
+        <button class="btn" onclick="clearNum()">C</button>
+        <button class="btn" onclick="pressNum('0')">0</button>
+        <button class="btn" onclick="backspace()">⌫</button>
+        <button class="btn btn-confirm" onclick="playSong()">재생 ▶</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const API_KEY = "AIzaSyB-_4IassJXMmCp3y-3O6Tt0fObbzYYFto"; // 본인 키
 
+    function pressNum(num) {
+      document.getElementById("display").value += num;
+    }
+
+    function clearNum() {
+      document.getElementById("display").value = "";
+    }
+
+    function backspace() {
+      let val = document.getElementById("display").value;
+      document.getElementById("display").value = val.slice(0, -1);
+    }
+
     async function playSong() {
-      let num = document.getElementById("songNum").value.trim();
+      let inputField = document.getElementById("display");
+      let num = inputField.value.trim();
+
       if (!num) {
         alert("번호를 입력하세요!");
         return;
       }
 
-      // 검색어 만들기
       let query = encodeURIComponent(num + " 찬송가");
       let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
 
@@ -40,13 +164,13 @@
           let first = data.items[0];
           if (first.id.kind === "youtube#video") {
             let videoId = first.id.videoId;
-            console.log("영상 ID:", videoId);
-
-            // autoplay=1 & mute=1 추가 (브라우저 정책 회피)
             document.getElementById("player").src =
               `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
+
+            // ✅ 재생 후 입력창 초기화
+            inputField.value = "";
           } else {
-            alert("검색 결과가 영상이 아닙니다: " + first.id.kind);
+            alert("검색된 결과가 영상이 아닙니다.");
           }
         } else {
           alert("검색 결과가 없습니다.");
