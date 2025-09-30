@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>노래방 기기</title>
+</head>
+<body>
+  <h2>노래방 기기</h2>
+  <input type="text" id="songNum" placeholder="곡 번호 입력">
+  <button onclick="playSong()">재생</button>
+
+  <div style="margin-top:20px;">
+    <iframe id="player" width="560" height="315"
+      src="" frameborder="0"
+      allow="autoplay; encrypted-media"
+      allowfullscreen>
+    </iframe>
+  </div>
+
+  <script>
+    const API_KEY = "AIzaSyB-_4IassJXMmCp3y-3O6Tt0fObbzYYFto"; // 본인 키
+
+    async function playSong() {
+      let num = document.getElementById("songNum").value.trim();
+      if (!num) {
+        alert("번호를 입력하세요!");
+        return;
+      }
+
+      // 검색어 만들기
+      let query = encodeURIComponent(num + " 찬송가");
+      let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
+
+      try {
+        let res = await fetch(url);
+        let data = await res.json();
+        console.log("API 응답:", data);
+
+        if (data.items && data.items.length > 0) {
+          let first = data.items[0];
+          if (first.id.kind === "youtube#video") {
+            let videoId = first.id.videoId;
+            console.log("영상 ID:", videoId);
+
+            // autoplay=1 & mute=1 추가 (브라우저 정책 회피)
+            document.getElementById("player").src =
+              `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
+          } else {
+            alert("검색 결과가 영상이 아닙니다: " + first.id.kind);
+          }
+        } else {
+          alert("검색 결과가 없습니다.");
+        }
+      } catch (err) {
+        console.error("API 오류:", err);
+        alert("영상을 불러오는 중 오류가 발생했습니다.");
+      }
+    }
+  </script>
+</body>
+</html>
