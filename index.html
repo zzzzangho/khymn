@@ -152,7 +152,7 @@
         return;
       }
 
-      let query = encodeURIComponent(num + " 광고 없는 찬송가 ");
+      let query = encodeURIComponent(num + " 찬송가 ");
       let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
 
       try {
@@ -192,4 +192,5 @@
   </script>
 </body>
 </html>
+
 
