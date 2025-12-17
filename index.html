@@ -14,7 +14,6 @@
       height: 100vh;
       box-sizing: border-box;
     }
-
     .container {
       display: flex;
       gap: 40px;
@@ -23,7 +22,6 @@
       max-width: 1600px;
       margin: auto;
     }
-
     .player-box {
       flex: 3;
       display: flex;
@@ -31,7 +29,6 @@
       align-items: center;
       justify-content: center;
     }
-
     iframe {
       width: 100%;
       height: 100%;
@@ -39,7 +36,6 @@
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0,0,0,0.7);
     }
-
     .control-panel {
       flex: 1;
       display: flex;
@@ -47,7 +43,6 @@
       align-items: center;
       justify-content: center;
     }
-
     #display {
       width: 80%;
       font-size: 2vw;
@@ -59,14 +54,12 @@
       background: #000;
       color: #ffcc00;
     }
-
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 1vw;
       width: 80%;
     }
-
     .btn {
       font-size: 1.8vw;
       padding: 2vh;
@@ -76,7 +69,6 @@
       color: #fff;
       cursor: pointer;
     }
-
     .btn-confirm {
       grid-column: span 3;
       background: #ff4444;
@@ -87,10 +79,8 @@
 
 <body>
   <div class="container">
-
-    <!-- 영상 -->
     <div class="player-box">
-      <h2>✨ 찬송가 반주기 3 ✨</h2>
+      <h2>✨ 찬송가 반주기 4.0 ✨</h2>
       <iframe
         id="player"
         src=""
@@ -100,7 +90,6 @@
       </iframe>
     </div>
 
-    <!-- 컨트롤 -->
     <div class="control-panel">
       <input id="display" type="text" placeholder="번호 입력" inputmode="numeric">
 
@@ -120,23 +109,16 @@
         <button class="btn btn-confirm" onclick="playSong()">재생 ▶</button>
       </div>
     </div>
-
   </div>
 
   <script>
     const API_KEY = "AIzaSyB-_4IassJXMmCp3y-3O6Tt0fObbzYYFto";
 
-    function pressNum(n) {
-      display.value += n;
-    }
+    const display = document.getElementById("display");
 
-    function clearNum() {
-      display.value = "";
-    }
-
-    function backspace() {
-      display.value = display.value.slice(0, -1);
-    }
+    function pressNum(n) { display.value += n; }
+    function clearNum() { display.value = ""; }
+    function backspace() { display.value = display.value.slice(0, -1); }
 
     async function playSong() {
       const num = display.value.trim();
@@ -148,32 +130,35 @@
       const query = encodeURIComponent(num + " 찬송가");
       const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
 
-      const res = await fetch(url);
-      const data = await res.json();
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
 
-      if (!data.items || !data.items.length) {
-        alert("검색 결과 없음");
-        return;
-      }
-
-      const videoId = data.items[0].id.videoId;
-      const iframe = document.getElementById("player");
-
-      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-
-      // ✅ 자동 전체화면 (재생 버튼 클릭 흐름 안)
-      setTimeout(() => {
-        if (iframe.requestFullscreen) {
-          iframe.requestFullscreen();
-        } else if (iframe.webkitRequestFullscreen) {
-          iframe.webkitRequestFullscreen();
-        } else if (iframe.msRequestFullscreen) {
-          iframe.msRequestFullscreen();
+        if (!data.items || !data.items.length) {
+          alert("검색 결과 없음");
+          return;
         }
-      }, 300);
 
-      display.value = "";
+        const videoId = data.items[0].id.videoId;
+        const iframe = document.getElementById("player");
+
+        // ✅ 반복재생: loop=1 + playlist=videoId 필수
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}`;
+
+        // ✅ 전체화면 (사용자 클릭 흐름 안에서 실행)
+        setTimeout(() => {
+          if (iframe.requestFullscreen) iframe.requestFullscreen();
+          else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+          else if (iframe.msRequestFullscreen) iframe.msRequestFullscreen();
+        }, 300);
+
+        display.value = "";
+      } catch (e) {
+        console.error(e);
+        alert("영상을 불러오는 중 오류가 발생했습니다.");
+      }
     }
   </script>
 </body>
 </html>
+
