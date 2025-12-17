@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>✨ 찬송가 반주기 ✨</title>
+  <meta charset="UTF-8" />
+  <title>찬송가 반주기</title>
   <style>
     body {
       font-family: "Malgun Gothic", sans-serif;
@@ -93,13 +93,16 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <!-- 왼쪽 영상 -->
     <div class="player-box">
-      <h2>✨ 찬송가 반주기 ✨</h2>
-      <iframe id="player"
-        src="" frameborder="0"
+      <h2>✨ 찬송가 반주기2 ✨</h2>
+      <iframe
+        id="player"
+        src=""
+        frameborder="0"
         allow="autoplay; encrypted-media"
         allowfullscreen>
       </iframe>
@@ -107,7 +110,7 @@
 
     <!-- 오른쪽 패널 -->
     <div class="control-panel">
-      <input type="text" id="display" placeholder="번호 입력" inputmode="numeric" pattern="[0-9]*">
+      <input type="text" id="display" placeholder="번호 입력" inputmode="numeric" pattern="[0-9]*" />
 
       <div class="keypad">
         <button class="btn" onclick="pressNum('1')">1</button>
@@ -139,37 +142,41 @@
     }
 
     function backspace() {
-      let val = document.getElementById("display").value;
-      document.getElementById("display").value = val.slice(0, -1);
+      const el = document.getElementById("display");
+      el.value = el.value.slice(0, -1);
     }
 
     async function playSong() {
-      let inputField = document.getElementById("display");
-      let num = inputField.value.trim();
+      const inputField = document.getElementById("display");
+      const num = inputField.value.trim();
 
       if (!num) {
         alert("번호를 입력하세요!");
         return;
       }
 
-      let query = encodeURIComponent(num + " 찬송가 ");
-      let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
+      const query = encodeURIComponent(num + " 찬송가");
+      const url =
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
 
       try {
-        let res = await fetch(url);
-        let data = await res.json();
+        const res = await fetch(url);
+        const data = await res.json();
         console.log("API 응답:", data);
 
         if (data.items && data.items.length > 0) {
-          let first = data.items[0];
+          const first = data.items[0];
+
           if (first.id.kind === "youtube#video") {
-            let videoId = first.id.videoId;
+            const videoId = first.id.videoId;
 
-            // ✅ mute 제거 → 항상 소리 켜짐
+            // ✅ 자동 반복재생 적용 핵심:
+            // loop=1 만으로는 반복이 안 되는 경우가 많아서
+            // playlist=videoId 를 함께 넣어야 "한 곡 반복"이 확실히 동작합니다.
             document.getElementById("player").src =
-              `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+              `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}`;
 
-            // ✅ 재생 후 입력창 초기화
+            // 재생 후 입력창 초기화
             inputField.value = "";
           } else {
             alert("검색된 결과가 영상이 아닙니다.");
@@ -182,15 +189,6 @@
         alert("영상을 불러오는 중 오류가 발생했습니다.");
       }
     }
-
-    // ✅ 키보드에서 Enter 눌러도 재생되도록
-    document.getElementById("display").addEventListener("keydown", function(e) {
-      if (e.key === "Enter") {
-        playSong();
-      }
-    });
   </script>
 </body>
 </html>
-
-
