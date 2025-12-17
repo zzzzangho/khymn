@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>찬송가 반주기</title>
+
   <style>
     body {
       font-family: "Malgun Gothic", sans-serif;
@@ -10,23 +11,19 @@
       color: #fff;
       margin: 0;
       padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
       height: 100vh;
       box-sizing: border-box;
     }
 
     .container {
       display: flex;
-      flex-direction: row;
       gap: 40px;
       width: 100%;
       height: 100%;
       max-width: 1600px;
+      margin: auto;
     }
 
-    /* 왼쪽 영상 */
     .player-box {
       flex: 3;
       display: flex;
@@ -43,7 +40,6 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.7);
     }
 
-    /* 오른쪽 제어 패널 */
     .control-panel {
       flex: 1;
       display: flex;
@@ -77,13 +73,8 @@
       border: none;
       border-radius: 8px;
       background: #555;
-      color: white;
+      color: #fff;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn:hover {
-      background: #777;
     }
 
     .btn-confirm {
@@ -96,9 +87,10 @@
 
 <body>
   <div class="container">
-    <!-- 왼쪽 영상 -->
+
+    <!-- 영상 -->
     <div class="player-box">
-      <h2>✨ 찬송가 반주기2 ✨</h2>
+      <h2>✨ 찬송가 반주기 3 ✨</h2>
       <iframe
         id="player"
         src=""
@@ -108,9 +100,9 @@
       </iframe>
     </div>
 
-    <!-- 오른쪽 패널 -->
+    <!-- 컨트롤 -->
     <div class="control-panel">
-      <input type="text" id="display" placeholder="번호 입력" inputmode="numeric" pattern="[0-9]*" />
+      <input id="display" type="text" placeholder="번호 입력" inputmode="numeric">
 
       <div class="keypad">
         <button class="btn" onclick="pressNum('1')">1</button>
@@ -128,66 +120,59 @@
         <button class="btn btn-confirm" onclick="playSong()">재생 ▶</button>
       </div>
     </div>
+
   </div>
 
   <script>
-    const API_KEY = "AIzaSyB-_4IassJXMmCp3y-3O6Tt0fObbzYYFto"; // 본인 키
+    const API_KEY = "AIzaSyB-_4IassJXMmCp3y-3O6Tt0fObbzYYFto";
 
-    function pressNum(num) {
-      document.getElementById("display").value += num;
+    function pressNum(n) {
+      display.value += n;
     }
 
     function clearNum() {
-      document.getElementById("display").value = "";
+      display.value = "";
     }
 
     function backspace() {
-      const el = document.getElementById("display");
-      el.value = el.value.slice(0, -1);
+      display.value = display.value.slice(0, -1);
     }
 
     async function playSong() {
-      const inputField = document.getElementById("display");
-      const num = inputField.value.trim();
-
+      const num = display.value.trim();
       if (!num) {
-        alert("번호를 입력하세요!");
+        alert("번호를 입력하세요");
         return;
       }
 
       const query = encodeURIComponent(num + " 찬송가");
-      const url =
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${query}&key=${API_KEY}`;
 
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        console.log("API 응답:", data);
+      const res = await fetch(url);
+      const data = await res.json();
 
-        if (data.items && data.items.length > 0) {
-          const first = data.items[0];
-
-          if (first.id.kind === "youtube#video") {
-            const videoId = first.id.videoId;
-
-            // ✅ 자동 반복재생 적용 핵심:
-            // loop=1 만으로는 반복이 안 되는 경우가 많아서
-            // playlist=videoId 를 함께 넣어야 "한 곡 반복"이 확실히 동작합니다.
-            document.getElementById("player").src =
-              `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}`;
-
-            // 재생 후 입력창 초기화
-            inputField.value = "";
-          } else {
-            alert("검색된 결과가 영상이 아닙니다.");
-          }
-        } else {
-          alert("검색 결과가 없습니다.");
-        }
-      } catch (err) {
-        console.error("API 오류:", err);
-        alert("영상을 불러오는 중 오류가 발생했습니다.");
+      if (!data.items || !data.items.length) {
+        alert("검색 결과 없음");
+        return;
       }
+
+      const videoId = data.items[0].id.videoId;
+      const iframe = document.getElementById("player");
+
+      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+
+      // ✅ 자동 전체화면 (재생 버튼 클릭 흐름 안)
+      setTimeout(() => {
+        if (iframe.requestFullscreen) {
+          iframe.requestFullscreen();
+        } else if (iframe.webkitRequestFullscreen) {
+          iframe.webkitRequestFullscreen();
+        } else if (iframe.msRequestFullscreen) {
+          iframe.msRequestFullscreen();
+        }
+      }, 300);
+
+      display.value = "";
     }
   </script>
 </body>
